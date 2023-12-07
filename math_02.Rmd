@@ -1,0 +1,231 @@
+---
+title: "math_01"
+output: html_document
+date: '2023-11-16'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(plotly)
+
+```
+
+
+```{r}
+## read and understand data ##
+time.df <- read.csv('C:/My stuff/Data Science 1/DataSci_project/coordinates.csv')
+head(df)
+
+```
+
+```{r}
+#looking at the column's info
+
+#str(time.df)
+
+```
+
+
+
+```{r}
+
+right_shoulder_plot <- ggplot(time.df, aes(x = RIGHT_SHOULDER_X, y =  RIGHT_SHOULDER_Y)) +
+    geom_point() +
+    geom_path() +
+    theme_classic()
+right_shoulder_plot
+
+```
+
+
+```{r}
+right_shoulder_x <- ggplot(time.df, aes(x = X, y =  RIGHT_SHOULDER_X)) +
+    geom_point() +
+    geom_path() +
+    theme_classic()
+right_shoulder_x
+
+
+```
+
+```{r}
+right_shoulder_y <- ggplot(time.df, aes(x = X, y =  RIGHT_SHOULDER_Y)) +
+    geom_point() +
+    geom_path() +
+    theme_classic()
+right_shoulder_y
+
+
+```
+
+
+```{r}
+shoulder.df = time.df %>% select(RIGHT_SHOULDER_X, RIGHT_SHOULDER_Y, RIGHT_SHOULDER_Z)
+shoulder.df
+```
+```{r}
+pca_shoulder = prcomp(shoulder.df, center = T, scale. = T)
+
+summary(pca_shoulder)
+```
+
+```{r}
+#Extract principal components
+pc_scores <- pca_shoulder$x  # Scores (coordinates of the data points in the new space)
+pc_loadings <- pca_shoulder$rotation  # Loadings (coefficients of the original variables in the principal components)
+```
+
+```{r}
+#Visualize the proportion of variance explained by each principal component
+plot(cumsum(pca_shoulder$sdev^2) / sum(pca_shoulder$sdev^2), xlab = "Number of Principal Components", ylab = "Cumulative Proportion of Variance Explained", type = "b")
+
+#Choose the number of components based on the plot above
+```
+
+
+```{r}
+#based on the plot above 
+#Reduce dimensions
+num_components_to_keep <- 2  # Choose the number of components you want to keep
+reduced_data <- pc_scores[, 1:num_components_to_keep]
+
+# The 'reduced_data' dataframe now contains the data with reduced dimensions
+
+```
+
+
+```{r}
+# Create a dataframe for the reduced data
+reduced_data_df <- as.data.frame(reduced_data)
+
+# Scatter plot of the reduced data
+plot(reduced_data_df$PC1, reduced_data_df$PC2, 
+     xlab = "Principal Component 1",
+     ylab = "Principal Component 2",
+     main = "Scatter Plot of Reduced Data")
+
+
+```
+
+
+```{r}
+plot_3D_shoulder <- plot_ly(
+  data = shoulder.df,
+  x = ~RIGHT_SHOULDER_X,
+  y = ~RIGHT_SHOULDER_Y,
+  z = ~RIGHT_SHOULDER_Z,
+  #text = ~paste("Time: ", time),
+  type = "scatter3d",
+  mode = "markers"
+)
+
+# Customize the layout
+layout <- list(
+  scene = list(
+    xaxis = list(title = 'X-axis'),
+    yaxis = list(title = 'Y-axis'),
+    zaxis = list(title = 'Z-axis')
+  )
+)
+
+# Combine plot and layout
+plot_3D_shoulder <- plot_3D_shoulder %>% layout(layout)
+
+# Display the interactive plot
+plot_3D_shoulder
+```
+
+
+```{r}
+#Convert hertz to second (1 second = 30 hertz) 
+#V stands for visibility [of the body parts] and how confident the machine is in capturing the right motion.
+
+time.df2 <- time.df %>%
+    mutate(t_sec = X/30)
+
+```
+
+
+```{r}
+TS_right_shoulder <- time.df2 %>%
+    ggplot(aes(x= t_sec, y= RIGHT_SHOULDER_Y)) +
+    geom_point() +
+    geom_path() +
+    geom_path(aes(y=RIGHT_SHOULDER_V), color="red") +
+    geom_path(aes(y=RIGHT_WRIST_X), color="blue") +
+    scale_x_continuous("time (sec.)", expand=c(0,0)) +
+    theme_classic()
+TS_right_shoulder
+```
+
+
+
+
+
+
+```{r}
+#str(time.df)
+#time.df$X
+```
+
+```{r}
+#plotting the right writs with X and Y axes
+right_wrist_plot <- ggplot(time.df, aes(x = RIGHT_WRIST_X, y =  RIGHT_WRIST_Y)) +
+    geom_point() +
+    geom_path() +
+    theme_classic()
+right_wrist_plot
+
+```
+
+
+```{r}
+TS_right_wrist <- time.df2 %>%
+    ggplot(aes(x= t_sec, y= RIGHT_WRIST_Y)) +
+    geom_point() +
+    geom_path() +
+    geom_path(aes(y=RIGHT_WRIST_V), color="red") +
+    # geom_path(aes(y=LEFT_WRIST_X), color="red") +
+    scale_x_continuous("time (sec.)", expand=c(0,0)) +
+    theme_classic()
+TS_right_wrist
+```
+
+```{r}
+
+TS_Right_X <- time.df2 %>%
+    ggplot(aes(x= t_sec, y= RIGHT_WRIST_X)) +
+    geom_point() +
+    geom_path() +
+    geom_path(aes(y=RIGHT_WRIST_V), color="red") +
+    # geom_path(aes(y=RIGHT_WRIST_X), color="red") +
+    scale_x_continuous("time (sec.)", expand=c(0,0)) +
+    theme_classic()
+TS_Right_X
+```
+
+```{r}
+
+TS_Left_X <- time.df2 %>%
+    ggplot(aes(x= t_sec, y= LEFT_WRIST_X)) +
+    geom_point() +
+    geom_path() +
+    geom_path(aes(y=LEFT_WRIST_V), color="red") +
+    # geom_path(aes(y=RIGHT_WRIST_X), color="red") +
+    scale_x_continuous("time (sec.)", expand=c(0,0)) +
+    theme_classic()
+TS_Left_X
+
+
+
+```
+
+
+
+
