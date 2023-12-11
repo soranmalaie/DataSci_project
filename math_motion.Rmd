@@ -5,36 +5,49 @@ date: '2023-11-16'
 ---
 
 ```{r setup, include=FALSE}
+## DH: I don't think this is necessary unless you're knitting to slides
 knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
 ```{r}
+## DH: `ggplot2` is included in `tidyverse`
 library(ggplot2)
 library(tidyverse)
 library(plotly)
 
 ```
 
+<!-- DH: What is this dataset?  Where did it come from?  Why are we looking at it?  What do we expect to see? -->
 
 ```{r}
 ## read and understand data ##
-time.df <- read.csv('C:/My stuff/Data Science 1/DataSci_project/function/coordinates_Dami.csv')
+## DH: Don't use hard-coded absolute paths.  In this case, we don't need a path at all, since the file is in the same directory as the script.  Recommend using `here` when you have the project organized into folders. 
+# tictoc::tic()
+time.df <- read.csv('coordinates_Dami.csv')
+# tictoc::toc()
+## DH: FWIW, on larger files read_csv is significantly faster, 3.7 sec vs. 1.3 sec
+# tictoc::tic()
+# foo <- read_csv('coordinates_Dami.csv')
+# tictoc::toc()
+## DH: ???
 head(df)
 
 
 ```
 
 ```{r}
+## DH: This just tells us the class for each column. `skim` would be more useful here
 #looking at the column's info
 str(time.df)
 
 ```
 
+<!-- DH: Anything notable here? -->
 
 ```{r}
 #Convert hertz to second (1 second = 30 hertz) 
-
+## DH: unnecessary pipe; save memory by doing this when you load the csv
 time.df2 <- time.df %>%
     mutate(t_sec = X/30)
 
@@ -43,13 +56,14 @@ time.df2 <- time.df %>%
 ```{r}
 #aha moment happend at the second 203 based on the video recording
 #truncating the data to 60 seconds before and after the insight moment
-
+## DH: ???
 ```
 
+<!-- DH: At this point, it seems like you've skipped over most of Peng and Matsui's checklist and gone directly to drawing some plots? -->
 
 ```{r}
 #plotting X and Y of right shoulder motion
-
+## DH: long line
 right_shoulder_plot <- ggplot(time.df2, aes(x = RIGHT_SHOULDER_X, y =  RIGHT_SHOULDER_Y)) +
     geom_point() +
     geom_path() +
@@ -58,6 +72,7 @@ right_shoulder_plot
 
 ```
 
+<!-- DH: Anything notable here? -->
 
 ```{r}
 #plotting shoulder's x axes over time
@@ -90,18 +105,25 @@ right_shoulder_y
 
 ```
 
-#Principle Component Analysis 
+<!-- DH: Anything notable here? -->
+
+# Principal Component Analysis 
 
 ```{r}
 #preparing data for Priciple Component Analysis
+## DH: unnecessary pipe; long line; unnecessary intermediate variable
 shoulder.df = time.df2 %>% select(RIGHT_SHOULDER_X, RIGHT_SHOULDER_Y, RIGHT_SHOULDER_Z)
 #shoulder.df
 ```
+<!-- DH: Why is this two different cells? -->
 ```{r}
+## DH: Using `T` rather than `TRUE` is not recommended
 pca_shoulder = prcomp(shoulder.df, center = T, scale. = T)
 
 summary(pca_shoulder)
 ```
+
+<!-- DH: Anything notable here? -->
 
 ```{r}
 #Extract principal components
@@ -110,6 +132,7 @@ pc_loadings <- pca_shoulder$rotation  # Loadings (coefficients of the original v
 ```
 
 ```{r}
+## DH: long line
 #Visualizing the proportion of variance explained by each principal component
 plot(cumsum(pca_shoulder$sdev^2) / sum(pca_shoulder$sdev^2), xlab = "Number of Principal Components", ylab = "Cumulative Proportion of Variance Explained", type = "b")
 
@@ -140,6 +163,7 @@ plot(reduced_data_df$PC1, reduced_data_df$PC2,
 
 ```
 
+<!-- DH: Anything notable here? -->
 
 ```{r}
 #plotting a 3D plot of the data
@@ -170,6 +194,7 @@ plot_3D_shoulder <- plot_3D_shoulder %>% layout(layout)
 plot_3D_shoulder
 ```
 
+<!-- DH: For me, a little hard to see with the points so large/opaque.  Anything notable here? -->
 
 ## Machine's confidnece in capturing the right motion
 
@@ -188,4 +213,5 @@ TS_right_shoulder
 
 ```
 
+<!-- DH: Anything notable here? -->
 
