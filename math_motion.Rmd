@@ -7,10 +7,8 @@ date: '2023-11-16'
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-```
 
-```{r}
-library(ggplot2)
+#library(ggplot2)
 library(tidyverse)
 library(plotly)
 
@@ -19,30 +17,59 @@ library(plotly)
 
 ```{r}
 ## read and understand data ##
-time.df <- read.csv('C:/My stuff/Data Science 1/DataSci_project/function/coordinates_Dami.csv')
-head(df)
 
+math.df <- read.csv('C:/My stuff/Data Science 1/DataSci_project/function/coordinates_Dami.csv')
+```
+
+```{r}
+#checking the head and the tail of my dataset
+
+head(math.df)
+tail(math.df)
 
 ```
+
 
 ```{r}
 #looking at the column's info
-str(time.df)
+#str(time.df)
 
 ```
 
 
 ```{r}
-#Convert hertz to second (1 second = 30 hertz) 
+#time (column X) is in hertz. 
+#Adding a column for time in seconds (1 second = 30 hertz) 
 
-time.df2 <- time.df %>%
-    mutate(t_sec = X/30)
+math.df <- math.df %>%
+    mutate(t_sec = X/30) 
 
 ```
 
+# Shoulder motion
+
+## Machine's confidnece in capturing the right motion of shoulder
+
 ```{r}
-#aha moment happend at the second 203 based on the video recording
-#truncating the data to 60 seconds before and after the insight moment
+#V stands for visibility of the body parts (the red line) and how confident the machine is in capturing the right motion.
+
+TS_right_shoulder <- math.df %>%
+    ggplot(aes(x= t_sec, y= RIGHT_SHOULDER_Y)) +
+    geom_point() +
+    geom_path() +
+    geom_path(aes(y=RIGHT_SHOULDER_V), color="red") +
+    geom_path(aes(y=RIGHT_SHOULDER_X), color="blue") +
+    scale_x_continuous("time (sec.)", expand=c(0,0)) +
+    theme_classic()
+
+TS_right_shoulder
+
+```
+
+## the plot above shows that the machine algorithm tracks participant's shoulder confidently (V = 1 throughout the session).
+
+```{r}
+#the insight (aha!) moment (observable by words such as "oh, OK!") happened at the second 203 based on the video recording
 
 ```
 
@@ -50,19 +77,19 @@ time.df2 <- time.df %>%
 ```{r}
 #plotting X and Y of right shoulder motion
 
-right_shoulder_plot <- ggplot(time.df2, aes(x = RIGHT_SHOULDER_X, y =  RIGHT_SHOULDER_Y)) +
+right_shoulder_plot <- ggplot(math.df, aes(x = RIGHT_SHOULDER_X, y =  RIGHT_SHOULDER_Y)) +
     geom_point() +
     geom_path() +
     theme_classic()
 right_shoulder_plot
 
 ```
-
+## The above plot shows that X is the mian (or at least more important) factor for distance
 
 ```{r}
 #plotting shoulder's x axes over time
 
-right_shoulder_x <- ggplot(time.df2, aes(x = X, y =  RIGHT_SHOULDER_X)) +
+right_shoulder_x <- ggplot(math.df, aes(x = X, y =  RIGHT_SHOULDER_X)) +
   geom_point() +
   geom_path() +
   geom_vline(xintercept = 203*30, linetype = "dashed", color = "red")+  
@@ -75,10 +102,50 @@ right_shoulder_x
 
 ```
 
+
+```{r}
+#min(time.df.sec$RIGHT_SHOULDER_X)
+#max(time.df.sec$RIGHT_SHOULDER_X)
+
+# Create labels for categorical distance
+labels <- c("close", "medium", "far")
+
+a <- 0.16 # less than a = close distance
+b <- 0.26 # greater than b = far distance
+
+df.shoulder.c <- math.df %>% select(X, t_sec, RIGHT_SHOULDER_X, RIGHT_SHOULDER_Y, RIGHT_SHOULDER_Z, RIGHT_SHOULDER_V)
+# Use cut to create the categorical variable
+df.shoulder.c$RIGHT_SHOULDER_X <- cut(df.shoulder.c$RIGHT_SHOULDER_X, breaks = c(-Inf, a, b, Inf), labels = labels, right = FALSE)
+
+# Print the result
+df.shoulder.c
+
+```
+
+```{r}
+# Preprocess the data to create a new variable for time slots
+t.lables_x = c("t1", "t2", "t3", "t4", "t5", "t6")
+df.shoulder.c2 <- df.shoulder.c %>%
+  mutate(TimeSlot_x = cut(X, breaks = 6, labels = t.lables_x)) #
+
+# Create the plot
+ggplot(df.shoulder.c2, aes(x = TimeSlot_x, fill = RIGHT_SHOULDER_X)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  labs(title = "Distribution of RIGHT SHOULDER X over Time Slots",
+       x = "Time Slot",
+       y = "Proportion") +
+  theme_minimal()
+
+```
+
+
+
+
 ```{r}
 #plotting shoulder's y axes over time
 
-right_shoulder_y <- ggplot(time.df2, aes(x = X, y =  RIGHT_SHOULDER_Y)) +
+right_shoulder_y <- ggplot(math.df, aes(x = X, y =  RIGHT_SHOULDER_Y)) +
   geom_point() +
   geom_path() +
   geom_vline(xintercept = 203*30, linetype = "dashed", color = "red") +
@@ -90,13 +157,314 @@ right_shoulder_y
 
 ```
 
+
+
+```{r}
+#min(time.df.sec$RIGHT_SHOULDER_X)
+#max(time.df.sec$RIGHT_SHOULDER_X)
+
+# Create labels for categorical distance
+labels_y <- c("close", "medium", "far")
+
+aa <- 0.56 # less than aa = close distance
+bb <- 0.58 # greater than bb = far distance
+
+#df.shoulder.c <- math.df %>% select(X, t_sec, RIGHT_SHOULDER_X, RIGHT_SHOULDER_Y, RIGHT_SHOULDER_Z, RIGHT_SHOULDER_V)
+
+# Use cut to create the categorical variable
+df.shoulder.c$RIGHT_SHOULDER_Y <- cut(df.shoulder.c$RIGHT_SHOULDER_Y, breaks = c(-Inf, aa, bb, Inf), labels = labels_y, right = FALSE)
+
+# Print the result
+df.shoulder.c
+
+```
+
+```{r}
+# Preprocess the data to create a new variable for time slots
+t.lables_y = c("t1", "t2", "t3", "t4", "t5", "t6")
+ df.shoulder.c2 <- df.shoulder.c %>%
+   mutate(TimeSlot_y = cut(X, breaks = 6)) #, labels = t.lables_y
+
+# Create the plot
+ggplot(df.shoulder.c2, aes(x = TimeSlot_y, fill = RIGHT_SHOULDER_Y)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  labs(title = "Distribution of RIGHT SHOULDER Y over Time Slots",
+       x = "Time Slot",
+       y = "Proportion") +
+  theme_minimal()
+
+```
+
+
+
+
+
+# right wrist motion
+
+## Machine's confidnece in capturing the right motion of wrist
+
+```{r}
+#V stands for visibility of the body parts (the red line) and how confident the machine is in capturing the right motion.
+
+TS_right_wrist <- math.df %>%
+    ggplot(aes(x= t_sec, y= RIGHT_WRIST_Y)) +
+    geom_point() +
+    geom_path() +
+    geom_path(aes(y=RIGHT_WRIST_V), color="red") +
+    geom_path(aes(y=RIGHT_WRIST_X), color="blue") +
+    scale_x_continuous("time (sec.)", expand=c(0,0)) +
+    theme_classic()
+
+TS_right_wrist
+
+```
+
+## the plot above shows that the machine algorithm doest not track participant's shoulder very confidently.
+
+
+```{r}
+#plotting X and Y of right wirst motion
+
+right_wrist_plot <- ggplot(math.df, aes(x = RIGHT_WRIST_X, y =  RIGHT_WRIST_Y)) +
+    geom_point() +
+    geom_path() +
+    theme_classic()
+right_wrist_plot
+
+```
+## The above plot shows that both X and Y important factor for distance.
+
+```{r}
+#plotting wrist's x axes over time
+
+right_wrist_x <- ggplot(math.df, aes(x = X, y =  RIGHT_WRIST_X)) +
+  geom_point() +
+  geom_path() +
+  geom_vline(xintercept = 203*30, linetype = "dashed", color = "red")+  
+  
+  xlab("time")+
+  theme_classic()
+
+right_wrist_x
+
+
+```
+
+
+```{r}
+#min(math.df$RIGHT_WRIST_X)
+#max(math.df$RIGHT_WRIST_X)
+
+# Create labels for categorical distance
+#labels <- c("close", "medium", "far")
+
+r1 <- 0.17 # less than r1 = close distance
+r2 <- 0.30 # greater than r2 = far distance
+
+df.wrist.c <- math.df %>% select(X, t_sec, RIGHT_WRIST_X, RIGHT_WRIST_Y, RIGHT_WRIST_Z, RIGHT_WRIST_V)
+# Use cut to create the categorical variable
+df.wrist.c$RIGHT_WRIST_X <- cut(df.wrist.c$RIGHT_WRIST_X, breaks = c(-Inf, r1, r2, Inf), labels = labels, right = FALSE)
+
+# Print the result
+df.wrist.c
+
+```
+
+```{r}
+# Preprocess the data to create a new variable for time slots
+#t.lables_x = c("t1", "t2", "t3", "t4", "t5", "t6")
+df.wrist.c2 <- df.wrist.c %>%
+  mutate(TimeSlot_x = cut(X, breaks = 6, labels = t.lables_x)) #
+
+# Create the plot
+ggplot(df.wrist.c2, aes(x = TimeSlot_x, fill = RIGHT_WRIST_X)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  labs(title = "Distribution of RIGHT SHOULDER X over Time Slots",
+       x = "Time Slot",
+       y = "Proportion") +
+  theme_minimal()
+
+```
+
+
+
+
+```{r}
+#plotting wrist's y axes over time
+
+right_wrist_y <- ggplot(math.df, aes(x = X, y =  RIGHT_WRIST_Y)) +
+  geom_point() +
+  geom_path() +
+  geom_vline(xintercept = 203*30, linetype = "dashed", color = "red") +
+  xlab("time")+
+  
+  theme_classic()
+
+right_wrist_y
+
+
+```
+
+
+
+```{r}
+#min(time.df.sec$RIGHT_WRIST_Y)
+#max(time.df.sec$RIGHT_WRIST_Y)
+
+# Create labels for categorical distance
+#labels_y <- c("close", "medium", "far")
+
+ry1 <- 0.5 # less than ry1 = close distance
+ry2 <- 0.7 # greater than ry2 = far distance
+
+#df.wrist.c <- math.df %>% select(X, t_sec, RIGHT_WRIST_X, RIGHT_WRIST_Y, RIGHT_WRIST_Z, RIGHT_WRIST_V)
+
+# Use cut to create the categorical variable
+df.wrist.c$RIGHT_WRIST_Y <- cut(df.wrist.c$RIGHT_WRIST_Y, breaks = c(-Inf, ry1, ry2, Inf), labels = labels_y, right = FALSE)
+
+# Print the result
+df.wrist.c
+
+```
+
+```{r}
+# Preprocess the data to create a new variable for time slots
+# t.lables_y = c("t1", "t2", "t3", "t4", "t5", "t6")
+ df.wrist.c2 <- df.wrist.c %>%
+   mutate(TimeSlot_y = cut(X, breaks = 6)) #, labels = t.lables_y
+
+# Create the plot
+ggplot(df.wrist.c2, aes(x = TimeSlot_y, fill = RIGHT_WRIST_Y)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  labs(title = "Distribution of RIGHT WRIST Y over Time Slots",
+       x = "Time Slot",
+       y = "Proportion") +
+  theme_minimal()
+
+
+```
+
+#Principle Component Analysis for right wrist
+
+```{r}
+#preparing data for Priciple Component Analysis
+wrist.df = math.df %>% select(RIGHT_WRIST_X, RIGHT_WRIST_Y, RIGHT_WRIST_Z)
+
+```
+
+```{r}
+pca_wrist = prcomp(wrist.df, center = T, scale. = T)
+
+summary(pca_wrist)
+```
+
+```{r}
+#Extract principal components
+pc_scores <- pca_wrist$x  # Scores (coordinates of the data points in the new space)
+pc_loadings <- pca_wrist$rotation  # Loadings (coefficients of the original variables in the principal components)
+```
+
+```{r}
+#Visualizing the proportion of variance explained by each principal component
+plot(cumsum(pca_wrist$sdev^2) / sum(pca_wrist$sdev^2), xlab = "Number of Principal Components", ylab = "Cumulative Proportion of Variance Explained", type = "b")
+
+```
+
+
+```{r}
+#based on the plot above by two components 90% of the variance can be explained 
+#Reduce dimensions
+num_components_to_keep <- 2  # Choosing the number of components we want to keep
+reduced_data <- pc_scores[, 1:num_components_to_keep]
+
+# The 'reduced_data' dataframe now contains the data with reduced dimensions
+
+```
+
+
+```{r}
+# Create a dataframe for the reduced data
+reduced_data_df <- as.data.frame(reduced_data)
+
+# Scatter plot of the reduced data
+plot(reduced_data_df$PC1, reduced_data_df$PC2, 
+     xlab = "Principal Component 1",
+     ylab = "Principal Component 2",
+     main = "Scatter Plot of Reduced Data")
+
+
+```
+
+
+```{r}
+#plotting a 3D plot of the data
+
+plot_3D_wrist <- plot_ly(
+  data = wrist.df,
+  x = ~RIGHT_WRIST_X,
+  y = ~RIGHT_WRIST_Y,
+  z = ~RIGHT_WRIST_Z,
+  #text = ~paste("Time: ", time),
+  type = "scatter3d",
+  mode = "markers"
+)
+
+# Customize the layout
+layout <- list(
+  scene = list(
+    xaxis = list(title = 'X-axis'),
+    yaxis = list(title = 'Y-axis'),
+    zaxis = list(title = 'Z-axis')
+  )
+)
+
+# Combine plot and layout
+plot_3D_wrist <- plot_3D_wrist %>% layout(layout)
+
+# Display the interactive plot
+plot_3D_wrist
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+#plotting shoulder's z axes over time
+
+right_shoulder_z <- ggplot(math.df, aes(x = X, y =  RIGHT_SHOULDER_Z)) +
+  geom_point() +
+  geom_path() +
+  geom_vline(xintercept = 203*30, linetype = "dashed", color = "red") +
+  xlab("time")+
+  
+  theme_classic()
+right_shoulder_z
+
+
+```
+
 #Principle Component Analysis 
 
 ```{r}
 #preparing data for Priciple Component Analysis
-shoulder.df = time.df2 %>% select(RIGHT_SHOULDER_X, RIGHT_SHOULDER_Y, RIGHT_SHOULDER_Z)
+shoulder.df = math.df %>% select(RIGHT_SHOULDER_X, RIGHT_SHOULDER_Y, RIGHT_SHOULDER_Z)
 #shoulder.df
 ```
+
 ```{r}
 pca_shoulder = prcomp(shoulder.df, center = T, scale. = T)
 
@@ -119,7 +487,7 @@ plot(cumsum(pca_shoulder$sdev^2) / sum(pca_shoulder$sdev^2), xlab = "Number of P
 ```{r}
 #based on the plot above by two components 90% of the variance can be explained 
 #Reduce dimensions
-num_components_to_keep <- 2  # Choosing the number of components you want to keep
+num_components_to_keep <- 2  # Choosing the number of components we want to keep
 reduced_data <- pc_scores[, 1:num_components_to_keep]
 
 # The 'reduced_data' dataframe now contains the data with reduced dimensions
@@ -168,24 +536,6 @@ plot_3D_shoulder <- plot_3D_shoulder %>% layout(layout)
 
 # Display the interactive plot
 plot_3D_shoulder
-```
-
-
-## Machine's confidnece in capturing the right motion
-
-```{r}
-#V stands for visibility of the body parts (the red line) and how confident the machine is in capturing the right motion.
-
-TS_right_shoulder <- time.df2 %>%
-    ggplot(aes(x= t_sec, y= RIGHT_SHOULDER_Y)) +
-    geom_point() +
-    geom_path() +
-    geom_path(aes(y=RIGHT_SHOULDER_V), color="red") +
-    geom_path(aes(y=RIGHT_WRIST_X), color="blue") +
-    scale_x_continuous("time (sec.)", expand=c(0,0)) +
-    theme_classic()
-TS_right_shoulder
-
 ```
 
 
