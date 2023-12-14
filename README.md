@@ -2,8 +2,13 @@
 
 <!-- DH general comments
 
-- This empty readme doesn't do anything. Give an introduction to the project and some setup instructions, as necessary. 
+## Mathematical Cognition and Embodied Reasoning
 
-- Your EDA skips most of Peng and Matsui's checklist, and doesn't give any exposition.  What are these data?  Why are we looking at them?  What do we expect to see?  Is that what we see? 
+This project explores the intricate relationship between the body and mathematical reasoning. We delve into the activities of mathematical experts, captured in a video corpus, to uncover patterns and nuances in their creative problem-solving process.
+
+### Setup Instructions
+
+1. Clone this repository.
+
 -->
 
