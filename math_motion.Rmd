@@ -7,10 +7,15 @@ date: '2023-11-16'
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+#library(renv)
+#renv::init()
 
 #library(ggplot2)
+
 library(tidyverse)
 library(plotly)
+
+#renv::snapshot()
 
 ```
 
@@ -18,14 +23,14 @@ library(plotly)
 ```{r}
 ## read and understand data ##
 
-math.df <- read.csv('C:/My stuff/Data Science 1/DataSci_project/function/coordinates_Dami.csv')
+math.df <- read.csv('coordinates_Dami.csv')
 ```
 
 ```{r}
 #checking the head and the tail of my dataset
 
-head(math.df)
-tail(math.df)
+#head(math.df)
+#tail(math.df)
 
 ```
 
@@ -61,6 +66,8 @@ TS_right_shoulder <- math.df %>%
     geom_path(aes(y=RIGHT_SHOULDER_X), color="blue") +
     scale_x_continuous("time (sec.)", expand=c(0,0)) +
     theme_classic()
+
+#ggsave("TS_right_shoulder_plot.png", TS_right_shoulder)
 
 TS_right_shoulder
 
@@ -99,8 +106,10 @@ right_shoulder_x <- ggplot(math.df, aes(x = X, y =  RIGHT_SHOULDER_X)) +
 
 right_shoulder_x
 
+#ggsave("right_shoulder_x.png", right_shoulder_x )
 
 ```
+
 
 
 ```{r}
@@ -113,12 +122,13 @@ labels <- c("close", "medium", "far")
 a <- 0.16 # less than a = close distance
 b <- 0.26 # greater than b = far distance
 
+
 df.shoulder.c <- math.df %>% select(X, t_sec, RIGHT_SHOULDER_X, RIGHT_SHOULDER_Y, RIGHT_SHOULDER_Z, RIGHT_SHOULDER_V)
 # Use cut to create the categorical variable
 df.shoulder.c$RIGHT_SHOULDER_X <- cut(df.shoulder.c$RIGHT_SHOULDER_X, breaks = c(-Inf, a, b, Inf), labels = labels, right = FALSE)
 
 # Print the result
-df.shoulder.c
+#df.shoulder.c
 
 ```
 
@@ -183,7 +193,7 @@ df.shoulder.c
 # Preprocess the data to create a new variable for time slots
 t.lables_y = c("t1", "t2", "t3", "t4", "t5", "t6")
  df.shoulder.c2 <- df.shoulder.c %>%
-   mutate(TimeSlot_y = cut(X, breaks = 6)) #, labels = t.lables_y
+   mutate(TimeSlot_y = cut(X, breaks = 6, labels = t.lables_y)) #
 
 # Create the plot
 ggplot(df.shoulder.c2, aes(x = TimeSlot_y, fill = RIGHT_SHOULDER_Y)) +
@@ -193,6 +203,9 @@ ggplot(df.shoulder.c2, aes(x = TimeSlot_y, fill = RIGHT_SHOULDER_Y)) +
        x = "Time Slot",
        y = "Proportion") +
   theme_minimal()
+
+#ggsave("shoulder_Y_distancePlot.png")
+
 
 ```
 
@@ -217,6 +230,8 @@ TS_right_wrist <- math.df %>%
     theme_classic()
 
 TS_right_wrist
+
+#ggsave("TS_right_wrist.png", TS_right_wrist)
 
 ```
 
